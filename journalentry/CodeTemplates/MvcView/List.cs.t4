@@ -1,0 +1,157 @@
+﻿<#@ template language="C#" HostSpecific="True" #>
+<#@ output extension=".cshtml" #>
+<#@ include file="Imports.include.t4" #>
+@model IEnumerable<#= "<" + ViewDataTypeName + ">" #>
+<#
+// The following chained if-statement outputs the file header code and markup for a partial view, a view using a layout page, or a regular view.
+if(IsPartialView) {
+#>
+
+<#
+} else if(IsLayoutPageSelected) {
+#>
+
+@{
+    ViewBag.Title = "<#= ViewName#>";
+<#
+if (!String.IsNullOrEmpty(LayoutPageFile)) {
+#>
+    Layout = "<#= LayoutPageFile#>";
+<#
+}
+#>
+}
+
+<#
+} else {
+#>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title><#= ViewName #></title>
+</head>
+<body>
+<#
+    PushIndent("    ");
+}
+#>
+
+<div class="row  top20 bottom50">
+    <div class="col-sm-9 col-md-9 col-lg-9"></div>
+    <div class="col-sm-2 col-md-2 col-lg-2">@Html.ActionLink("Create", "Create", null, new { @class = "btn blue-hoki btn-block" })</div>
+    <div class="col-sm-1 col-md-1 col-lg-1">@Html.ActionLink("Reset", "Index", null, new { @class = "btn purple-medium btn-block" })</div>
+</div>
+
+<table class="table table-striped table-hover index">
+<thead>
+    <tr>
+<#
+IEnumerable<PropertyMetadata> properties = ModelMetadata.Properties;
+int cntHead = 0;
+foreach (PropertyMetadata property in properties) {
+    if (property.Scaffold && !property.IsPrimaryKey && !property.IsForeignKey) {
+	if(cntHead > 5)
+	{
+	continue;
+	}
+#>
+<#
+        // We do not want to show any association properties for which there is
+        // no associated foreign key.
+        if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
+            continue;
+        }
+#>
+        <th>
+            @Html.DisplayNameFor(model => model.<#= GetValueExpression(property) #>)
+        </th>
+<#
+cntHead++;
+    }
+}
+#>
+        <th></th>
+    </tr>
+	</thead>
+	<tbody>
+@foreach (var item in Model) {
+    <tr>
+<#
+int cntBody = 0;
+foreach (PropertyMetadata property in properties) {
+    if (property.Scaffold && !property.IsPrimaryKey && !property.IsForeignKey) {
+	if(cntBody > 5)
+	{
+	continue;
+	}
+#>
+<#
+        // We do not want to show any association properties for which there is
+        // no associated foreign key.
+        if (property.IsAssociation && GetRelatedModelMetadata(property) == null) {
+            continue;
+        }
+#>
+        <td>
+            @Html.DisplayFor(modelItem => <#= "item." + GetValueExpression(property) #>)
+        </td>
+<#
+cntBody++;
+    }
+}
+
+string pkName = GetPrimaryKeyName();
+if (pkName != null) {
+#>
+		<td class="text-right">
+            @Html.ActionLink("Edit", "Edit", new { id=item.<#= pkName #> }, new { @class = "btn btn-xs yellow" })
+            @Html.ActionLink("Details", "Details", new { id=item.<#= pkName #> }, new { @class = "btn btn-xs blue-hoki" })
+            @Html.ActionLink("Delete", "Delete", new { id=item.<#= pkName #> }, new { @class = "btn btn-xs red-thunderbird" })
+        </td>
+<#
+} else {
+#>
+		<td class="text-right">
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-xs yellow" })
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-xs blue-hoki" })
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ }, new { @class = "btn btn-xs red-thunderbird" })
+        </td>
+<#
+}
+#>
+    </tr>
+}
+</tbody>
+</table>
+<#
+// The following code closes the tag used in the case of a view using a layout page and the body and html tags in the case of a regular view page
+#>
+<#
+if(!IsPartialView && !IsLayoutPageSelected) {
+    ClearIndent();
+#>
+</body>
+</html>
+<#
+}
+else{
+#>
+@section Scripts{
+    <script>
+        $('.index').dataTable({
+            "aLengthMenu": [[10, 20, 50, 100], [10, 20, 50, 100]],
+            "iDisplayLength": 10
+        });
+    </script>
+}
+<#
+}
+#>
+<#@ include file="ModelMetadataFunctions.cs.include.t4" #>

@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<!--[if IE 9]><html lang="en" class="ie9 no-js"><![endif]-->
+<!--[if !IE]><!-->
+<html lang="en" class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8" />
+    <title>Papé I.T. Services</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/global/plugins/font-awesome/css/font-awesome.min.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/global/css/plugins.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/global/plugins/bootstrap/css/1_bootstrap.min.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/global/css/components.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/global/plugins/data-tables/DT_bootstrap.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/admin/layout/css/layout2.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/assets/admin/layout/css/smoothness-jquery-ui.css")
+    @Styles.Render("http://10.99.99.49/BackPlane/Content/general.css");
+
+    @Html.Raw(User.Identity.GetFrameColor())
+</head>
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-sidebar-closed page-footer-fixed">
+    
+    @if (User.Identity.IsAuthenticated)
+    {
+        @Html.Raw(User.Identity.GetFrameTopMenu())
+    }
+
+    <div class="clearfix"></div>
+
+    <!-- BEGIN CONTAINER -->
+    <div class="page-container">
+
+        <!-- BEGIN VIEW CONTENT -->
+        <div class="page-content-wrapper">
+            <div id="mainContent" class="page-content" style="overflow:auto;">
+
+                @RenderBody()
+            </div>
+        </div>
+        <!-- END VIEW CONTENT -->
+    </div>
+    <!-- END CONTAINER -->
+
+
+    @Html.Raw(User.Identity.GetFrameFooter())
+
+    @Scripts.Render("http://10.99.99.49/backplane/bundles/jquery")
+    @Scripts.Render("http://10.99.99.49/backplane/bundles/jqueryui")
+    @Scripts.Render("http://10.99.99.49/Backplane/bundles/coreJS2")
+
+    <script>
+        jQuery(document).ready(function () {
+            Metronic.init();
+            Layout.init();
+        });
+    </script>
+
+    @RenderSection("Scripts", false)
+</body>
+</html>
