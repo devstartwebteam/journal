@@ -18,6 +18,15 @@
     @Styles.Render("http://10.99.99.49/BackPlane/assets/admin/layout/css/smoothness-jquery-ui.css")
     @Styles.Render("http://10.99.99.49/BackPlane/Content/general.css");
 
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/autofill/2.3.1/css/autoFill.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.4/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/keytable/2.4.1/css/keyTable.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" />   
+    <link rel="stylesheet" type="text/css" href="/Content/editor.dataTables.min.css" />
+
+
     @Html.Raw(User.Identity.GetFrameColor())
 </head>
 
@@ -51,11 +60,143 @@
     @Scripts.Render("http://10.99.99.49/backplane/bundles/jqueryui")
     @Scripts.Render("http://10.99.99.49/Backplane/bundles/coreJS2")
 
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/autofill/2.3.1/js/dataTables.autoFill.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/keytable/2.5.0/js/dataTables.keyTable.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <script type="text/javascript" src="/Scripts/dataTables.editor.min.js"></script>
+
+
     <script>
         jQuery(document).ready(function () {
             Metronic.init();
             Layout.init();
         });
+
+        $("#excelForm").submit(function (e) {
+            e.preventDefault();
+            GetJson();
+        });
+
+        $("#excelReset").click(function () {
+            $("#editorTable").DataTable().destroy();
+            $("#editorTable").hide();
+        });
+
+        /*function TestJson() {
+            var data = [
+                {
+                    "glNumber": "06-40-0760.032",
+                    "journalNumber": "7",
+                    "Source": "JE PG 06-012345",
+                    "Reference": "Hardware",
+                    "Model": "COMMENT",
+                    "Date": "2008-11-13",
+                    "Control": "",
+                    "Account": "6",
+                    "Amount": "79.94",
+                    "Type": "0"
+                }];
+            return data;
+        }*/
+
+        function GetJson() {
+            var excelFile = new FormData();
+            var myfile = $('#excelFile').prop('files')[0];
+            excelFile.append('file', myfile);
+            var url = '@Url.Action("CreateExcel", "JournalEntry")';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: excelFile,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $("#editorTable").show();
+                    $("#excelReset").show();
+                    var finalData = $.parseJSON(response);
+                    var editor = new $.fn.dataTable.Editor({
+                        table: "#editorTable",
+                        idSrc:  "glNumber",
+                        fields: [{
+                            label: "GL Number:",
+                            name: "glNumber"
+                        }, {
+                            label: "Journal Number:",
+                            name: "journalNumber"
+                        }, {
+                            label: "Source:",
+                            name: "Source"
+                        }, {
+                            label: "Reference:",
+                            name: "Reference"
+                        }, {
+                            label: "Model:",
+                            name: "Model"
+                        }, {
+                            label: "Date:",
+                            name: "Date",
+                            type: "datetime"
+                        }, {
+                            label: "Control:",
+                            name: "Control"
+                        }, {
+                            label: "Account:",
+                            name: "Account"
+                        }, {
+                            label: "Amount:",
+                            name: "Amount"
+                        }, {
+                            label: "Type:",
+                            name: "Type"
+                        }
+                        ],
+                        formOptions: {
+                            inline: {
+                                onBlur: 'submit'
+                            }
+                        }
+                    });
+
+                    $('#editorTable').DataTable({
+                        data: finalData,
+                        columns: [
+                            { "data": "glNumber" },
+                            { "data": "journalNumber" },
+                            { "data": "Source" },
+                            { "data": "Reference" },
+                            { "data": "Model" },
+                            { "data": "Date" },
+                            { "data": "Control" },
+                            { "data": "Account" },
+                            { "data": "Amount" },
+                            { "data": "Type" }
+                        ],
+                        order: [1, 'asc'],
+                        keys: {
+                            columns: ':not(:first-child)',
+                            editor: editor
+                           
+                        },
+                        select: {
+                            style: 'os',
+                            selector: 'td:first-child'
+                        },
+                        buttons: [
+                            { extend: "create", editor: editor },
+                            { extend: "edit", editor: editor },
+                            { extend: "remove", editor: editor }
+                        ]
+
+                    });                    
+                }
+            })
+        }
+
+
     </script>
 
     @RenderSection("Scripts", false)
