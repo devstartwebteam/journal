@@ -13,6 +13,7 @@ using PapeCore;
 
 namespace journalentry.Controllers
 {
+    [Authorize]
     public class JournalEntryController : Controller
     {
         //Get: JournalEntry
@@ -44,6 +45,9 @@ namespace journalentry.Controllers
                     int startRow = start.Row;
                     int endCol = end.Column;
                     int endRow = end.Row;
+                    int rowId = 0;
+
+                    List<EntryError> errorList = new List<EntryError>();
 
                     var entryList = new List<EntryRow>();
                     var columns = new List<ExcelMap>();
@@ -77,11 +81,11 @@ namespace journalentry.Controllers
                                 HasDisplayName = displayAttribute != null
                             };
                         })
-                    .Where(prop => !string.IsNullOrWhiteSpace(prop.DisplayName))
+                    .Where(prop => !string.IsNullOrWhiteSpace(prop.DisplayName) && prop.Name != "rowId")
                     .ToList();
 
-                    //Based on Template provided, first row contains column names
-                    for(int column = startCol; column <= endCol; column++)
+                    //Based on Template provided, the first row in Excel spreadsheet contains column names
+                    for (int column = startCol; column <= endCol; column++)
                     {
                         string cellValue = (worksheet.Cells[startRow, column].Value ?? string.Empty).ToString().Trim();
 
@@ -98,7 +102,7 @@ namespace journalentry.Controllers
                         }
                     }
 
-                    //Loop through the remaining rows
+                    //Loop through the remaining rows of the spreadsheet
                     for (int rowIndex = startRow + 1; rowIndex <= endRow; rowIndex++)
                     {
                         var item = new EntryRow();
@@ -108,8 +112,7 @@ namespace journalentry.Controllers
                             var valueStr = value == null ? string.Empty : value.ToString().Trim();
                             var prop = props.First(p => p.DisplayName.Contains(column.MappedTo));
 
-
-                            // Excel stores all numbers as doubles, but we're relying on the object's property types
+                            //Excel stores all numbers as doubles, but we're relying on the object's property types
                             if (prop != null)
                             {
                                 var propertyType = prop.PropertyType;
@@ -150,8 +153,23 @@ namespace journalentry.Controllers
                                 {
                                     double val;
                                     if (!double.TryParse(valueStr, out val))
+                                    {
                                         val = default(double);
-                                    parsedValue = val;
+
+                                        EntryError doubleError = new EntryError()
+                                        {
+                                            errorMessage = "Input not valid",
+                                            errorRow = rowIndex,
+                                            errorCol = column.Index
+                                        };
+
+                                        errorList.Add(doubleError);
+                                    }
+                                    else
+                                    {
+                                        parsedValue = val;
+                                    }
+                                    
                                 }
                                 else if (propertyType == typeof(DateTime?) || propertyType == typeof(DateTime))
                                 {
@@ -198,15 +216,27 @@ namespace journalentry.Controllers
                         entryList.Add(item);
                     }
 
+                    //Now that we've added all of the spreadsheet fields to the list of EntryRows, add in a unique rowId
+                    //The rowId is used for the checkbox feature in the datatables editor and as the key value in the HTML table
+                    
+                    foreach (var item in entryList)
+                    {
+                        item.DT_RowId = rowId;
+                        rowId++;
+                    }
+                    
                     var json = new JavaScriptSerializer().Serialize(entryList);
                     Console.WriteLine(json);
+
+                    //json = json.Replace("[{", "{\"data\" :[{").Replace("}]", "}]}");
+
+                    json = json.Replace("[{", "{\"data\" :[{").Replace("}]", "}],\"fieldErrors\" :[{\"name\" :\"journalNumber\",\"status\" :\"This field is required\"},{\"name\":\"Source\",\"status\": \"This field is required\"}]}");
 
                     return Json(json, JsonRequestBehavior.AllowGet);
                 }
 
             }
             return Json(excelFile);
-
         }
     }
 }

@@ -19,12 +19,13 @@
     @Styles.Render("http://10.99.99.49/BackPlane/Content/general.css");
 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/autofill/2.3.1/css/autoFill.dataTables.min.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.4/css/buttons.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/keytable/2.4.1/css/keyTable.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/keytable/2.5.0/css/keyTable.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" />   
     <link rel="stylesheet" type="text/css" href="/Content/editor.dataTables.min.css" />
+
+    <link rel="stylesheet" type="text/css" href="~/Content/site.css" />
 
 
     @Html.Raw(User.Identity.GetFrameColor())
@@ -61,11 +62,16 @@
     @Scripts.Render("http://10.99.99.49/Backplane/bundles/coreJS2")
 
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/autofill/2.3.1/js/dataTables.autoFill.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/buttons.print.min.js"></script> 
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/keytable/2.5.0/js/dataTables.keyTable.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    
     <script type="text/javascript" src="/Scripts/dataTables.editor.min.js"></script>
 
 
@@ -77,32 +83,17 @@
 
         $("#excelForm").submit(function (e) {
             e.preventDefault();
-            GetJson();
+            $("#excelFile").val().length != 0 ? GetJson() : alert("Please select a valid Excel file to upload.");
         });
 
         $("#excelReset").click(function () {
             $("#editorTable").DataTable().destroy();
-            $("#editorTable").hide();
+            $("#editorTable, .j-editor-wrap").hide();
+            $("#excelFile").val("");
         });
 
-        /*function TestJson() {
-            var data = [
-                {
-                    "glNumber": "06-40-0760.032",
-                    "journalNumber": "7",
-                    "Source": "JE PG 06-012345",
-                    "Reference": "Hardware",
-                    "Model": "COMMENT",
-                    "Date": "2008-11-13",
-                    "Control": "",
-                    "Account": "6",
-                    "Amount": "79.94",
-                    "Type": "0"
-                }];
-            return data;
-        }*/
-
         function GetJson() {
+            showPacman('pathPacman');
             var excelFile = new FormData();
             var myfile = $('#excelFile').prop('files')[0];
             excelFile.append('file', myfile);
@@ -115,12 +106,12 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    $("#editorTable").show();
-                    $("#excelReset").show();
+                    killPacman();
+                    $("#editorTable, #excelReset, .j-editor-wrap").show();
                     var finalData = $.parseJSON(response);
                     var editor = new $.fn.dataTable.Editor({
                         table: "#editorTable",
-                        idSrc:  "glNumber",
+                        idSrc: "DT_RowId",
                         fields: [{
                             label: "GL Number:",
                             name: "glNumber"
@@ -153,50 +144,83 @@
                             label: "Type:",
                             name: "Type"
                         }
-                        ],
-                        formOptions: {
-                            inline: {
-                                onBlur: 'submit'
-                            }
+                    ],
+                    /*formOptions: {
+                        inline: {
+                            onBlur: "preSubmit"
                         }
+                    }*/
+                    });
+                    
+                    // Activate an inline edit on click of a table cell
+                    $('#editorTable').on('click', 'tbody td:not(:first-child)', function (e) {
+                        editor.inline(table.cell(this).index(), {
+                            onBlur: 'submit'
+                        });
                     });
 
-                    $('#editorTable').DataTable({
-                        data: finalData,
+
+                    $("#editorTable").DataTable({
+                        dom: "Bfrtip",
+                        data: finalData.data,
+                        fieldErrors: finalData.fieldErrors,
                         columns: [
-                            { "data": "glNumber" },
-                            { "data": "journalNumber" },
-                            { "data": "Source" },
-                            { "data": "Reference" },
-                            { "data": "Model" },
-                            { "data": "Date" },
-                            { "data": "Control" },
-                            { "data": "Account" },
-                            { "data": "Amount" },
-                            { "data": "Type" }
+                            {
+                                data: "",
+                                defaultContent: "",
+                                className: "select-checkbox j-select-col",
+                                orderable: false
+                            },
+                            { data: "glNumber" },
+                            { data: "journalNumber" },
+                            { data: "Source" },
+                            { data: "Reference" },
+                            { data: "Model" },
+                            { data: "Date" },
+                            { data: "Control" },
+                            { data: "Account" },
+                            { data: "Amount" },
+                            { data: "Type" }
                         ],
                         order: [1, 'asc'],
                         keys: {
                             columns: ':not(:first-child)',
                             editor: editor
-                           
                         },
                         select: {
                             style: 'os',
-                            selector: 'td:first-child'
+                            selector: 'td:first-child',
+                            blurable: true
                         },
                         buttons: [
                             { extend: "create", editor: editor },
                             { extend: "edit", editor: editor },
-                            { extend: "remove", editor: editor }
-                        ]
-
-                    });                    
+                            { extend: "remove", editor: editor },
+                            {
+                                extend: 'collection',
+                                text: 'Export',
+                                buttons: [
+                                    'copy',
+                                    'excel',
+                                    'csv',
+                                    'pdf',
+                                    'print'
+                                ]
+                            },
+                            {
+                                extend: "selectedSingle",
+                                text: "Pre-Pass",
+                                action: function (e, dt, node, config) {
+                                    editor
+                                        .edit(table.row({ selected: true }).index(), false)
+                                        .set('salary', (editor.get('salary') * 1) + 250)
+                                        .submit();
+                                }
+                            }]
+                    });
                 }
             })
         }
-
-
     </script>
 
     @RenderSection("Scripts", false)

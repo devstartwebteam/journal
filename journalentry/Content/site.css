@@ -1,0 +1,70 @@
+﻿/* Custom Project Styles */
+
+body .j-showTable {
+    display:none;
+}
+
+body .j-page-title, body .j-icon-wrap {
+    display:inline-block;
+    padding:10px;
+}
+
+body .j-title-wrap {
+    padding-bottom:40px;
+}
+
+body .j-icon-wrap .fa {
+    font-size: 35px;
+    color: white;
+    opacity: 0.3;
+    position:relative;
+    top:5px;
+}
+
+body .j-page-title {
+    color:#fff;
+    line-height: 36px;
+    letter-spacing: -1px;
+    margin:0px;
+    font-weight: 300;
+    font-size:25px;
+}
+
+body .j-editor-wrap {
+    padding:20px;
+    margin-top:40px;
+    background-color:#fff;
+    display:none;
+    border: #c7c7c7 1px solid;
+}
+
+body div.dtk-focus-alt table.dataTable tbody th.focus,
+body div.dtk-focus-alt table.dataTable tbody td.focus {
+    background-color:#ffffee !important;
+}
+
+body #editorTable, body .j-editor-wrap .dt-buttons {
+    padding-bottom:20px;
+}
+
+body .j-editor-wrap input[type=search] {
+    -webkit-appearance: searchfield;
+}
+
+/* Editor - Datatables extras */
+
+body div.DTE_Inline input {
+        border: none;
+        background-color: transparent;
+        padding: 0 !important;
+        font-size: 90%;
+    }
+ 
+body div.DTE_Inline input:focus {
+        outline: none;
+        background-color: transparent;
+    }
+
+body a.buttons-collection {
+        margin-left: 1em;
+    }

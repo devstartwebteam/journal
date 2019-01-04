@@ -230,11 +230,12 @@
     <Compile Include="App_Start\EmbeddedResourceVirtualPathProviderStart.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\JournalEntryController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\EntryError.cs" />
+    <Compile Include="Models\EntryRequest.cs" />
     <Compile Include="Models\ExcelMap.cs" />
     <Compile Include="Models\JournalEntryViewModel.cs" />
     <Compile Include="Models\EntryRow.cs" />
@@ -242,6 +243,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\banner.jpg" />
+    <Content Include="Content\site.css" />
     <Content Include="Content\editor.dataTables.css" />
     <Content Include="Content\editor.dataTables.min.css" />
     <Content Include="Content\IntranetLogin.css" />
@@ -283,9 +285,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Project_Readme.html" />
-    <Content Include="Views\Home\Index.cshtml" />
     <None Include="Properties\PublishProfiles\Developer.pubxml" />
     <Content Include="Views\JournalEntry\Create.cshtml" />
+    <Content Include="Views\Shared\_PageTitle.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+@Html.Partial("_PageTitle")
 
 @using (Html.BeginForm("Create", "JournalEntry", FormMethod.Post, new { @id="excelForm", enctype = "multipart/form-data" }))
 {
@@ -13,7 +13,7 @@
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
     <div class="form-group row">
-        @Html.LabelFor(model => model.excelFile, htmlAttributes: new { @class = "control-label col-md-2" })
+        @Html.Label("Please Select an Excel File", htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-6 offset-md-4">
            @Html.TextBoxFor(model => model.excelFile, new { @id="excelFile", type = "file", name = "excelFile" })
             @Html.ValidationMessageFor(model => model.excelFile, "", new { @class = "text-danger" })
@@ -22,43 +22,48 @@
     <br />
         <div class="form-group row">
             <div class="col-md-offset-2 col-md-1">
-                <input id="excelSubmit" type="submit" value="Create" class="btn green" />
+                <input id="excelSubmit" type="submit" value="Create Table" class="btn green" />
             </div>
             <div class="col-md-9">
-                <input id="excelReset" type="button" value="Reset" class="btn red-thunderbird" style="display:none;"/>
+                <input id="excelReset" type="button" value="Reset Table" class="btn red-thunderbird" style="display:none;"/>
             </div>
         </div>
 
         }
 
+<span id="pathPacman"></span>
 
-<table id="editorTable" style="display:none;">
-    <thead>
-        <tr>
-            <th>GL Number</th>
-            <th>Journal Number</th>
-            <th>Source</th>
-            <th>Reference</th>
-            <th>Model</th>
-            <th>Date</th>
-            <th>Control</th>
-            <th>Account</th>
-            <th>Amount</th>
-            <th>Type</th>
-        </tr>
-    </thead>
-    <tfoot>
-        <tr>
-            <th>GL Number</th>
-            <th>Journal Number</th>
-            <th>Source</th>
-            <th>Reference</th>
-            <th>Model</th>
-            <th>Date</th>
-            <th>Control</th>
-            <th>Account</th>
-            <th>Amount</th>
-            <th>Type</th>
-        </tr>
-    </tfoot>
-</table>
+<div class="j-editor-wrap">
+    <table id="editorTable" class="display j-showTable" cellspacing="0">
+        <thead>
+            <tr>
+                <th></th>
+                <th>GL Number</th>
+                <th>Journal Number</th>
+                <th>Source</th>
+                <th>Reference</th>
+                <th>Model</th>
+                <th>Date</th>
+                <th>Control</th>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th></th>
+                <th>GL Number</th>
+                <th>Journal Number</th>
+                <th>Source</th>
+                <th>Reference</th>
+                <th>Model</th>
+                <th>Date</th>
+                <th>Control</th>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Type</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
