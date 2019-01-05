@@ -10,16 +10,40 @@ using System.Web.Script.Serialization;
 using OfficeOpenXml;
 using System.ComponentModel.DataAnnotations;
 using PapeCore;
+using DataTables;
+using System.Data.Common;
 
 namespace journalentry.Controllers
 {
     [Authorize]
     public class JournalEntryController : Controller
     {
+       
         //Get: JournalEntry
         public ActionResult Create()
         {
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult ValidateTable()
+        {
+            /*var settings = Properties.Settings.Default;
+            var formData = HttpContext.Request.Form;
+
+                var response = new Editor()
+                    .Model<EntryRow>()
+                    .Field(new Field("journalNumber")
+                        .Validator(Validation.MinNum(
+                            20,
+                            new ValidationOpts { Message = "Testing Validation" }
+                        ))
+                    )
+                    .Process(formData)
+                    .Data();
+
+                return Json(response, JsonRequestBehavior.AllowGet);*/
+            return View("test");
         }
 
         // POST: JournalEntry

@@ -32,7 +32,7 @@
 </head>
 
 <body class="page-header-fixed page-sidebar-closed-hide-logo page-sidebar-closed page-footer-fixed">
-    
+
     @if (User.Identity.IsAuthenticated)
     {
         @Html.Raw(User.Identity.GetFrameTopMenu())
@@ -67,23 +67,26 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/buttons.print.min.js"></script> 
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.4/js/buttons.print.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/keytable/2.5.0/js/dataTables.keyTable.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-    
+
     <script type="text/javascript" src="/Scripts/dataTables.editor.min.js"></script>
 
 
     <script>
-        jQuery(document).ready(function () {
+
+        //global object for submit and return
+        var editor;
+
+        $(function () {
             Metronic.init();
             Layout.init();
-        });
 
         $("#excelForm").submit(function (e) {
             e.preventDefault();
-            $("#excelFile").val().length != 0 ? GetJson() : alert("Please select a valid Excel file to upload.");
+            $("#excelFile").val().length != 0 ? BuildTable() : alert("Please select a valid Excel file to upload.");
         });
 
         $("#excelReset").click(function () {
@@ -92,12 +95,55 @@
             $("#excelFile").val("");
         });
 
-        function GetJson() {
-            showPacman('pathPacman');
+        editor = new $.fn.dataTable.Editor({
+            table: "#editorTable",
+            idSrc: "DT_RowId",
+            fields: [{
+                label: "GL Number:",
+                name: "glNumber"
+            }, {
+                label: "Journal Number:",
+                name: "journalNumber"
+            }, {
+                label: "Source:",
+                name: "Source"
+            }, {
+                label: "Reference:",
+                name: "Reference"
+            }, {
+                label: "Model:",
+                name: "Model"
+            }, {
+                label: "Date:",
+                name: "Date",
+                type: "datetime"
+            }, {
+                label: "Control:",
+                name: "Control"
+            }, {
+                label: "Account:",
+                name: "Account"
+            }, {
+                label: "Amount:",
+                name: "Amount"
+            }, {
+                label: "Type:",
+                name: "Type"
+            }
+            ],
+            /*formOptions: {
+                inline: {
+                    onBlur: "preSubmit"
+                }
+            }*/
+        });
+
+        function BuildTable() {
             var excelFile = new FormData();
             var myfile = $('#excelFile').prop('files')[0];
             excelFile.append('file', myfile);
             var url = '@Url.Action("CreateExcel", "JournalEntry")';
+            showPacman('pathPacman');
 
             $.ajax({
                 url: url,
@@ -109,118 +155,86 @@
                     killPacman();
                     $("#editorTable, #excelReset, .j-editor-wrap").show();
                     var finalData = $.parseJSON(response);
-                    var editor = new $.fn.dataTable.Editor({
-                        table: "#editorTable",
-                        idSrc: "DT_RowId",
-                        fields: [{
-                            label: "GL Number:",
-                            name: "glNumber"
-                        }, {
-                            label: "Journal Number:",
-                            name: "journalNumber"
-                        }, {
-                            label: "Source:",
-                            name: "Source"
-                        }, {
-                            label: "Reference:",
-                            name: "Reference"
-                        }, {
-                            label: "Model:",
-                            name: "Model"
-                        }, {
-                            label: "Date:",
-                            name: "Date",
-                            type: "datetime"
-                        }, {
-                            label: "Control:",
-                            name: "Control"
-                        }, {
-                            label: "Account:",
-                            name: "Account"
-                        }, {
-                            label: "Amount:",
-                            name: "Amount"
-                        }, {
-                            label: "Type:",
-                            name: "Type"
-                        }
-                    ],
-                    /*formOptions: {
-                        inline: {
-                            onBlur: "preSubmit"
-                        }
-                    }*/
-                    });
-                    
-                    // Activate an inline edit on click of a table cell
-                    $('#editorTable').on('click', 'tbody td:not(:first-child)', function (e) {
-                        editor.inline(table.cell(this).index(), {
-                            onBlur: 'submit'
-                        });
-                    });
-
-
-                    $("#editorTable").DataTable({
-                        dom: "Bfrtip",
-                        data: finalData.data,
-                        fieldErrors: finalData.fieldErrors,
-                        columns: [
-                            {
-                                data: "",
-                                defaultContent: "",
-                                className: "select-checkbox j-select-col",
-                                orderable: false
-                            },
-                            { data: "glNumber" },
-                            { data: "journalNumber" },
-                            { data: "Source" },
-                            { data: "Reference" },
-                            { data: "Model" },
-                            { data: "Date" },
-                            { data: "Control" },
-                            { data: "Account" },
-                            { data: "Amount" },
-                            { data: "Type" }
-                        ],
-                        order: [1, 'asc'],
-                        keys: {
-                            columns: ':not(:first-child)',
-                            editor: editor
-                        },
-                        select: {
-                            style: 'os',
-                            selector: 'td:first-child',
-                            blurable: true
-                        },
-                        buttons: [
-                            { extend: "create", editor: editor },
-                            { extend: "edit", editor: editor },
-                            { extend: "remove", editor: editor },
-                            {
-                                extend: 'collection',
-                                text: 'Export',
-                                buttons: [
-                                    'copy',
-                                    'excel',
-                                    'csv',
-                                    'pdf',
-                                    'print'
-                                ]
-                            },
-                            {
-                                extend: "selectedSingle",
-                                text: "Pre-Pass",
-                                action: function (e, dt, node, config) {
-                                    editor
-                                        .edit(table.row({ selected: true }).index(), false)
-                                        .set('salary', (editor.get('salary') * 1) + 250)
-                                        .submit();
-                                }
-                            }]
-                    });
+                    InitializeTable(finalData);
+                    //ValidateTable();
                 }
-            })
+            });
         }
+
+        function InitializeTable(finalData) {
+            $("#editorTable").DataTable({
+                dom: "Bfrtip",
+                data: finalData.data,
+                columns: [
+                    {
+                        data: "",
+                        defaultContent: "",
+                        className: "select-checkbox j-select-col",
+                        orderable: false
+                    },
+                    { data: "glNumber" },
+                    { data: "journalNumber" },
+                    { data: "Source" },
+                    { data: "Reference" },
+                    { data: "Model" },
+                    { data: "Date" },
+                    { data: "Control" },
+                    { data: "Account" },
+                    { data: "Amount" },
+                    { data: "Type" }
+                ],
+                order: [1, 'asc'],
+                keys: {
+                    columns: ':not(:first-child)',
+                    editor: editor
+                },
+                select: {
+                    style: 'os',
+                    selector: 'td:first-child',
+                    blurable: true
+                },
+                buttons: [
+                    { extend: "create", editor: editor },
+                    { extend: "edit", editor: editor },
+                    { extend: "remove", editor: editor },
+                    {
+                        extend: 'collection',
+                        text: 'Export',
+                        buttons: [
+                            'copy',
+                            'excel',
+                            'csv',
+                            'pdf',
+                            'print'
+                        ]
+                    },
+                    {
+                    extend: "selectedSingle",
+                    text: "Pre-Pass",
+                    action: function (e, dt, node, config) {
+                        editor
+                            .edit(table.row({ selected: true }).index(), false)
+                            .set('salary', (editor.get('salary') * 1) + 250)
+                            .submit();
+                    }
+                }]
+            });
+        }
+
+        // Activate an inline edit on click of a table cell
+        $('#editorTable').on('click', 'tbody td:not(:first-child)', function (e) {
+            var index = editor.inline(this._DT_CellIndex);
+            var action = 'edit';
+            var url = '@Url.Action("CreateExcel", "JournalEntry")?action=' + action + '&index=' + index;
+
+            editor.inline(table.cell(this).index(), {
+                onBlur: $.getJSON(url, display)
+            });
+
+        });
+
+    });
+
     </script>
 
     @RenderSection("Scripts", false)
